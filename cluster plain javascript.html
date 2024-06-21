@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clustered Tag Chart</title>
+</head>
+<body>
+    <canvas id="myChart" width="800" height="600"></canvas>
+
+    <script>
+        // Sample data (replace this with your actual data from Excel)
+        const data = [
+            { tag1: 'A', tag2: 'X' },
+            { tag1: 'B', tag2: 'Y' },
+            { tag1: 'A', tag2: 'X' },
+            { tag1: 'B', tag2: 'X' },
+            { tag1: 'A', tag2: 'X' },
+            { tag1: 'C', tag2: 'Z' },
+            { tag1: 'B', tag2: 'Y' },
+            { tag1: 'A', tag2: 'Y' },
+            { tag1: 'C', tag2: 'Z' },
+            { tag1: 'A', tag2: 'X' },
+            // ... more data points
+        ];
+
+        const canvas = document.getElementById('myChart');
+        const ctx = canvas.getContext('2d');
+
+        function getColor(tag1, tag2) {
+            const combinedTag = tag1 + tag2;
+            let hash = 0;
+            for (let i = 0; i < combinedTag.length; i++) {
+                hash = combinedTag.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return `hsl(${hash % 360}, 70%, 50%)`;
+        }
+
+        function drawChart() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 50;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Group data by tag combination
+            const groups = {};
+            data.forEach(item => {
+                const key = `${item.tag1}-${item.tag2}`;
+                if (!groups[key]) {
+                    groups[key] = [];
+                }
+                groups[key].push(item);
+            });
+
+            // Calculate positions for each group
+            const groupPositions = {};
+            let index = 0;
+            for (let key in groups) {
+                const angle = (index / Object.keys(groups).length) * Math.PI * 2;
+                const radius = Math.min(width, height) / 3;
+                groupPositions[key] = {
+                    x: width / 2 + Math.cos(angle) * radius,
+                    y: height / 2 + Math.sin(angle) * radius
+                };
+                index++;
+            }
+
+            // Draw clusters
+            for (let key in groups) {
+                const items = groups[key];
+                const pos = groupPositions[key];
+                const color = getColor(items[0].tag1, items[0].tag2);
+
+                // Draw surrounding circle
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, Math.sqrt(items.length) * 10 + 10, 0, Math.PI * 2);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw points
+                items.forEach((item, i) => {
+                    const angle = (i / items.length) * Math.PI * 2;
+                    const x = pos.x + Math.cos(angle) * (Math.sqrt(items.length) * 5);
+                    const y = pos.y + Math.sin(angle) * (Math.sqrt(items.length) * 5);
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                });
+
+                // Draw label
+                ctx.fillStyle = 'black';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${key} (${items.length})`, pos.x, pos.y + Math.sqrt(items.length) * 10 + 25);
+            }
+        }
+
+        drawChart();
+
+        // Add interactivity (optional)
+        canvas.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            drawChart(); // Redraw to clear previous tooltips
+
+            for (let key in groupPositions) {
+                const pos = groupPositions[key];
+                const items = groups[key];
+                const distance = Math.sqrt((mouseX - pos.x) ** 2 + (mouseY - pos.y) ** 2);
+
+                if (distance < Math.sqrt(items.length) * 10 + 10) {
+                    ctx.fillStyle = 'black';
+                    ctx.font = '14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${key}: ${items.length} items`, mouseX, mouseY - 20);
+                    break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

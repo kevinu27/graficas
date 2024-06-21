@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ApexCharts Moving Window Example</title>
+    <title>ApexCharts Moving Window Example with Color Change</title>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
@@ -13,6 +13,8 @@
         let dataArray = [30, 40, 35, 50, 49, 60, 70, 91];
         const maxDataPoints = 8;
         let currentIndex = dataArray.length;
+        const upperThreshold = 80;
+        const lowerThreshold = 40;
 
         let options = {
             chart: {
@@ -28,7 +30,11 @@
             },
             series: [{
                 name: 'Data',
-                data: dataArray.map((value, index) => [currentIndex - dataArray.length + index + 1, value])
+                data: dataArray.map((value, index) => ({
+                    x: currentIndex - dataArray.length + index + 1,
+                    y: value,
+                    color: value > upperThreshold ? '#FF4560' : (value < lowerThreshold ? '#00E396' : '#008FFB')
+                }))
             }],
             xaxis: {
                 type: 'numeric',
@@ -42,7 +48,24 @@
             yaxis: {
                 min: function(min) { return Math.floor(min * 0.9); },
                 max: function(max) { return Math.ceil(max * 1.1); }
-            }
+            },
+            markers: {
+                size: 5,
+                colors: undefined,
+                strokeColors: '#fff',
+                strokeWidth: 2,
+                strokeOpacity: 0.9,
+                fillOpacity: 1,
+                discrete: [],
+                shape: "circle",
+                radius: 2,
+                offsetX: 0,
+                offsetY: 0,
+                hover: {
+                    size: undefined,
+                    sizeOffset: 3
+                }
+            },
         };
 
         let chart = new ApexCharts(document.querySelector("#chart"), options);
@@ -55,7 +78,11 @@
             }
             dataArray.push(newValue);
             chart.updateSeries([{
-                data: dataArray.map((value, index) => [currentIndex - dataArray.length + index + 1, value])
+                data: dataArray.map((value, index) => ({
+                    x: currentIndex - dataArray.length + index + 1,
+                    y: value,
+                    color: value > upperThreshold ? '#FF4560' : (value < lowerThreshold ? '#00E396' : '#008FFB')
+                }))
             }]);
         }
 

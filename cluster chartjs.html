@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cluster Chart with Chart.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="myChart" width="800" height="600"></canvas>
+
+    <script>
+        // Sample data (replace this with your actual data from Excel)
+        const data = [
+            { x: 10, y: 20, tag1: 'A', tag2: 'X' },
+            { x: 15, y: 25, tag1: 'B', tag2: 'Y' },
+            { x: 12, y: 18, tag1: 'A', tag2: 'Y' },
+            { x: 8, y: 22, tag1: 'B', tag2: 'X' },
+            // ... more data points
+        ];
+
+        // Function to get a unique color for each combination of tag1 and tag2
+        function getColor(tag1, tag2) {
+            const combinedTag = tag1 + tag2;
+            let hash = 0;
+            for (let i = 0; i < combinedTag.length; i++) {
+                hash = combinedTag.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const color = `hsl(${hash % 360}, 70%, 50%)`;
+            return color;
+        }
+
+        // Prepare data for Chart.js
+        const datasets = data.map(point => ({
+            label: `${point.tag1}-${point.tag2}`,
+            data: [{x: point.x, y: point.y}],
+            backgroundColor: getColor(point.tag1, point.tag2),
+            borderColor: getColor(point.tag1, point.tag2),
+            pointRadius: 8,
+            pointHoverRadius: 10
+        }));
+
+        // Create the chart
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const point = data[context.dataIndex];
+                                return `(${point.x}, ${point.y}) - Tag1: ${point.tag1}, Tag2: ${point.tag2}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'left'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
