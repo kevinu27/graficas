@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ApexCharts Moving Window Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body>
+    <div id="chart"></div>
+
+    <script>
+        let dataArray = [30, 40, 35, 50, 49, 60, 70, 91];
+        const maxDataPoints = 8;
+        let currentIndex = dataArray.length;
+
+        let options = {
+            chart: {
+                type: 'line',
+                height: 350,
+                animations: {
+                    enabled: true,
+                    easing: 'linear',
+                    dynamicAnimation: {
+                        speed: 1000
+                    }
+                }
+            },
+            series: [{
+                name: 'Data',
+                data: dataArray.map((value, index) => [currentIndex - dataArray.length + index + 1, value])
+            }],
+            xaxis: {
+                type: 'numeric',
+                tickAmount: maxDataPoints - 1,
+                labels: {
+                    formatter: function(value) {
+                        return Math.round(value);
+                    }
+                }
+            },
+            yaxis: {
+                min: function(min) { return Math.floor(min * 0.9); },
+                max: function(max) { return Math.ceil(max * 1.1); }
+            }
+        };
+
+        let chart = new ApexCharts(document.querySelector("#chart"), options);
+        chart.render();
+
+        function addData(newValue) {
+            currentIndex++;
+            if (dataArray.length >= maxDataPoints) {
+                dataArray.shift();
+            }
+            dataArray.push(newValue);
+            chart.updateSeries([{
+                data: dataArray.map((value, index) => [currentIndex - dataArray.length + index + 1, value])
+            }]);
+        }
+
+        setInterval(() => {
+            let newValue = Math.floor(Math.random() * 100) + 1;
+            addData(newValue);
+        }, 3000);
+    </script>
+</body>
+</html>

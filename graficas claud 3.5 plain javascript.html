@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plain JavaScript Moving Window Chart</title>
+</head>
+<body>
+    <canvas id="chart" width="600" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('chart');
+        const ctx = canvas.getContext('2d');
+
+        let dataArray = [30, 40, 35, 50, 49, 60, 70, 91];
+        const maxDataPoints = 8;
+        let currentIndex = dataArray.length;
+
+        function drawChart() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 40;
+            const dataMax = Math.max(...dataArray);
+            const dataMin = Math.min(...dataArray);
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw axes
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            // Draw data points and lines
+            ctx.beginPath();
+            dataArray.forEach((value, index) => {
+                const x = padding + (index * (width - 2 * padding) / (maxDataPoints - 1));
+                const y = height - padding - ((value - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
+
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(x - 2, y - 2, 4, 4);
+            });
+            ctx.strokeStyle = 'blue';
+            ctx.stroke();
+
+            // Draw labels
+            ctx.fillStyle = 'black';
+            ctx.font = '12px Arial';
+            dataArray.forEach((value, index) => {
+                const x = padding + (index * (width - 2 * padding) / (maxDataPoints - 1));
+                const labelIndex = currentIndex - dataArray.length + index + 1;
+                ctx.fillText(labelIndex, x - 5, height - padding + 20);
+                ctx.fillText(value, x - 10, height - padding - ((value - dataMin) * (height - 2 * padding) / (dataMax - dataMin)) - 10);
+            });
+        }
+
+        function addData(newValue) {
+            currentIndex++;
+            if (dataArray.length >= maxDataPoints) {
+                dataArray.shift();
+            }
+            dataArray.push(newValue);
+            drawChart();
+        }
+
+        // Initial draw
+        drawChart();
+
+        // Example: Add new data every 3 seconds
+        setInterval(() => {
+            let newValue = Math.floor(Math.random() * 100) + 1;
+            addData(newValue);
+        }, 3000);
+    </script>
+</body>
+</html>
