@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Shape Color Change</title>
+    <style>
+        svg {
+            width: 300px;
+            height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <svg viewBox="0 0 220 100">
+        <g id="pins">
+            <line x1="10" y1="0" x2="10" y2="50" stroke="black" stroke-width="2" />
+            <line x1="30" y1="0" x2="30" y2="50" stroke="black" stroke-width="2" />
+            <line x1="50" y1="0" x2="50" y2="50" stroke="black" stroke-width="2" />
+            <line x1="70" y1="0" x2="70" y2="50" stroke="black" stroke-width="2" />
+            <line x1="90" y1="0" x2="90" y2="50" stroke="black" stroke-width="2" />
+            <line x1="110" y1="0" x2="110" y2="50" stroke="black" stroke-width="2" />
+            <line x1="130" y1="0" x2="130" y2="50" stroke="black" stroke-width="2" />
+            <line x1="150" y1="0" x2="150" y2="50" stroke="black" stroke-width="2" />
+            <line x1="170" y1="0" x2="170" y2="50" stroke="black" stroke-width="2" />
+            <line x1="190" y1="0" x2="190" y2="50" stroke="black" stroke-width="2" />
+            <line x1="210" y1="0" x2="210" y2="50" stroke="black" stroke-width="2" />
+        </g>
+        <rect x="0" y="50" width="220" height="50" fill="none" stroke="black" stroke-width="2" />
+    </svg>
+    <br>
+    <button id="changeColorBtn">Change Colors</button>
+
+    <script>
+        const changeColorBtn = document.getElementById('changeColorBtn');
+        const pins = document.querySelectorAll('#pins line');
+
+        changeColorBtn.addEventListener('click', () => {
+            let delay = 0;
+            pins.forEach((pin, index) => {
+                setTimeout(() => {
+                    pin.setAttribute('stroke', getRandomColor());
+                }, delay);
+                delay += 200; // Increment delay for each pin
+            });
+        });
+
+        function getRandomColor() {
+            return `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`;
+        }
+    </script>
+</body>
+</html>

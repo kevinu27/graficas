@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plain JavaScript Moving Window Chart with Color Change</title>
+    <title>Plain JavaScript Moving Window Chart with Curved Lines</title>
 </head>
 <body>
     <canvas id="chart" width="600" height="400"></canvas>
@@ -15,14 +15,6 @@
         let dataArray = [30, 40, 35, 50, 49, 60, 70, 91];
         const maxDataPoints = 8;
         let currentIndex = dataArray.length;
-        const upperThreshold = 80;
-        const lowerThreshold = 40;
-
-        function getColor(value) {
-            if (value > upperThreshold) return '#FF4560';
-            if (value < lowerThreshold) return '#00E396';
-            return '#008FFB';
-        }
 
         function drawChart() {
             const width = canvas.width;
@@ -40,25 +32,29 @@
             ctx.lineTo(width - padding, height - padding);
             ctx.stroke();
 
-            // Draw data points and lines
+            // Draw curved line
+            ctx.beginPath();
             dataArray.forEach((value, index) => {
                 const x = padding + (index * (width - 2 * padding) / (maxDataPoints - 1));
                 const y = height - padding - ((value - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
 
-                if (index > 0) {
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    // Calculate control points for the curve
                     const prevX = padding + ((index - 1) * (width - 2 * padding) / (maxDataPoints - 1));
                     const prevY = height - padding - ((dataArray[index - 1] - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
+                    const midX = (prevX + x) / 2;
                     
-                    ctx.beginPath();
-                    ctx.moveTo(prevX, prevY);
-                    ctx.lineTo(x, y);
-                    ctx.strokeStyle = getColor(value);
-                    ctx.stroke();
+                    ctx.bezierCurveTo(midX, prevY, midX, y, x, y);
                 }
 
-                ctx.fillStyle = getColor(value);
+                // Draw point
+                ctx.fillStyle = 'blue';
                 ctx.fillRect(x - 3, y - 3, 6, 6);
             });
+            ctx.strokeStyle = 'blue';
+            ctx.stroke();
 
             // Draw labels
             ctx.fillStyle = 'black';

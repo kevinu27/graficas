@@ -1,0 +1,23 @@
+.diente {
+    margin-top: 5%;
+    margin-bottom: 5%;
+}
+
+.result{
+    margin-top: 5%;
+}
+
+span {
+    display: flex;
+    align-items: center;
+}
+
+.placeholder{
+    margin-right: 10px;
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+}
+
