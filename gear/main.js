@@ -1,18 +1,37 @@
 function calcularDiente() {
     // console.log('calculo del diente')
     const anguloDiente = parseInt(document.getElementById('anguloDiente').value);
-    const radius1 = parseInt(document.getElementById('radius1').value);
-    const radius2 = parseInt(document.getElementById('radius2').value);
-    const espesor = parseInt(document.getElementById('espesor').value);
+    const Diameter1 = parseInt(document.getElementById('diameter1').value);
+    const Diameter2 = parseInt(document.getElementById('diameter2').value);
+    const espesorGear = parseInt(document.getElementById('espesor').value);
     const convertDegToRad = Math.PI/180
     // console.log('anguloDiente', anguloDiente)
     const inclinacionDiente = espesor*Math.sin(anguloDiente*convertDegToRad)
-    var miSpan = document.getElementById("inclinacionDiente");
-    miSpan.textContent = inclinacionDiente + " mm";
+    // var miSpan = document.getElementById("inclinacionDiente");
+    // miSpan.textContent = inclinacionDiente + " mm";
 
-    const giroCara1 = (inclinacionDiente*360)/(2*Math.PI*radius1)
-    const giroCara2 = (inclinacionDiente*360)/(2*Math.PI*radius2)
+    // const giroCara1 = (inclinacionDiente*360)/(2*Math.PI*radius1)
+    // const giroCara2 = (inclinacionDiente*360)/(2*Math.PI*radius2)
 
+    //////////////////engranaje 1
+    const circumference1 = Math.PI*Diameter1
+    console.log('circumference', circumference1)
+    const leadOfTheHelicoidal1 = circumference1 /Math.tan(anguloDiente*Math.PI/180)
+    console.log('leadOfTheHelicoidal', leadOfTheHelicoidal1)
+    const twistAngle1 = (espesorGear/leadOfTheHelicoidal1)*360
+    console.log('twistAngle', twistAngle1)
+
+    //////////////////engranaje 2
+    const circumference2 = Math.PI*Diameter2
+    console.log('circumference', circumference2)
+    const leadOfTheHelicoidal2 = circumference2 /Math.tan(anguloDiente*Math.PI/180)
+    console.log('leadOfTheHelicoidal', leadOfTheHelicoidal2)
+    const twistAngle2 = (espesorGear/leadOfTheHelicoidal2)*360
+    console.log('twistAngle', twistAngle2)
+
+    
+    const giroCara1 = twistAngle1
+    const giroCara2 = twistAngle2
 
     var miSpan2 = document.getElementById("giroCara1");
     miSpan2.textContent = giroCara1 + " Cº";  

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Viewer</title>
+    <title>GEAR</title>
     <link rel="stylesheet" href="./style.css">
     <script src="main.js"></script>
 </head>
@@ -23,34 +23,34 @@
 <div>
     <label for="anguloDiente">angulo del diente</label>
     <input type="number" id="anguloDiente" value="15">
-    <label for="radius1">radio 1:</label>
-    <input type="number" id="radius1" value="40">
-    <label for="radius2">radio 2:</label>
-    <input type="number" id="radius2" value="30">
+    <label for="radius1">diametro 1:</label>
+    <input type="number" id="diameter1" value="40">
+    <label for="radius2">diametro 2:</label>
+    <input type="number" id="diameter2" value="30">
     <label for="espesor">espesor diente:</label>
     <input type="number" id="espesor" value="10">
 
     <button onclick="calcularDiente()">Draw Gear</button>
   </div>
 
-<div class="result">
+<!-- <div class="result">
   <h1> RESULTADOS:</h1>
     <span>
       <p class="placeholder"> dezplazamiento de la parte superior del diente:</p>
       <p id="inclinacionDiente"></p>
     </span>
-</div>
+</div> -->
 
 <div>
     <span>
-        <p class="placeholder">giro de cara 1: </p>
+        <p class="placeholder">angulo de giro de la helice del primer engranaje: </p>
         <p id="giroCara1"></p>
     </span>
 </div>
 
 <div>
     <span>
-        <p class="placeholder">giro de cara 2: </p>
+        <p class="placeholder">angulo de giro de la helice del segundo engranaje: </p>
         <p id="giroCara2"></p>
     </span>
 </div>
