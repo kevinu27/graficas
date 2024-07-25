@@ -7,10 +7,33 @@
     <link rel="stylesheet" href="./style.css">
     <script src="main.js"></script>
 </head>
+<div class="divs">
+  <canvas id="gearCanvas" width="400" height="400" style="
+      border: 2px solid red;
+  "></canvas>
+  
+  <div class="segundoDiv">
+  <canvas id="gearCanvas2" width="400" height="400" style="
+  border: 2px solid red;
+  "></canvas>
 
-<canvas id="gearCanvas" width="400" height="400" style="
-    border: 2px solid red;
-"></canvas>
+  <div class="inputs">
+
+    <label for="module">Module:</label>
+    <input type="number" id="module" value="2">
+
+    <label for="teeths">Number of teeths:</label>
+    <input type="number" id="Nteeths" value="20">
+
+    <div class="diametroPrimitivoDisplay">
+      <h3>Dp:</h3> <p>fd</p>
+    </div>
+
+  </div>
+  
+
+  </div>
+</div>
 <div class="diente">
   <label for="teeth">Number of teeth:</label>
   <input type="number" id="teeth" value="20">
@@ -18,7 +41,7 @@
   <input type="number" id="radius" value="100">
   <label for="pressure">Pressure angle (degrees):</label>
   <input type="number" id="pressure" value="20">
-  <button onclick="drawGear()">Draw Gear</button>
+  <button onclick="drawGear2()">Draw Gear</button>
 </div>
 <div>
     <label for="anguloDiente">angulo del diente</label>

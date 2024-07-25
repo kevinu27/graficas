@@ -44,6 +44,8 @@ function calcularDiente() {
 function drawGear() {
   const canvas = document.getElementById('gearCanvas');
   const ctx = canvas.getContext('2d');
+  console.log('canvas', canvas)
+  console.log('ctx', ctx)
   
   const teeth = parseInt(document.getElementById('teeth').value);
   const radius = parseInt(document.getElementById('radius').value);
@@ -54,7 +56,6 @@ function drawGear() {
   
   const toothDepth = radius * 0.1;
   const toothAngle = (Math.PI * 2) / (teeth * 4);
-//   console.log('toothAngle', toothAngle)
   
   ctx.beginPath();
   
@@ -93,16 +94,50 @@ function drawGear() {
   ctx.stroke();
   
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
-  ctx.strokeStyle = 'red';
-ctx.moveTo(100, 75);
-ctx.lineTo(0, 0);
+
+
+/////////////////////////////////n
+  // ctx.strokeStyle = 'red';
+// ctx.moveTo(100, 75);
+// ctx.lineTo(0, 0);
 
 //ctx.lineWidth = 15;
+// ctx.stroke();
+// ctx.strokeStyle = 'blue';
+// ctx.beginPath();
+// ctx.arc(100, 75, 50, 0, 5);
+// ctx.stroke();
+console.log('ctx al acabar la funcion')
+
+}
+
+////////--------------------------------------------------------------------------------
+
+function drawGear2() {
+  const canvas = document.getElementById('gearCanvas2');
+  const ctx = canvas.getContext('2d');
+  const module = parseInt(document.getElementById('module').value);
+  const Nteeths = parseInt(document.getElementById('Nteeths').value);
+  console.log('module', module)
+  console.log('Nteeths', Nteeths)
+
+  const diametroP = document.getElementsByClassName('diametroPrimitivoDisplay')[0];
+  const diametroPValue = diametroP.getElementsByTagName('p')[0];
+  diametroPValue.textContent = module*Nteeths
+
+
+/////////////////////////////////n
+//   ctx.strokeStyle = 'red';
+// ctx.moveTo(100, 75);
+// ctx.lineTo(0, 0);
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+ctx.lineWidth = 1;
 ctx.stroke();
 ctx.strokeStyle = 'blue';
 ctx.beginPath();
-ctx.arc(100, 75, 50, 0, 5);
+ctx.arc(100, 75, module*Nteeths, 0, 5);
 ctx.stroke();
 }
 
 drawGear();
+drawGear2()

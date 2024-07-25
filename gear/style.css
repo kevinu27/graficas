@@ -21,3 +21,26 @@ span {
     align-items: center;
 }
 
+.segundoDiv{
+    display: flex;
+    border: 2px solid green;
+}
+
+.divs{
+    display: flex;
+}
+
+.inputs{
+    display: flex;
+    flex-direction: column;
+}
+
+.diametroPrimitivoDisplay{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    border: 2px solid red;
+    p{
+        margin-left: 10px;
+    }
+}
