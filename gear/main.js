@@ -126,17 +126,35 @@ function drawGear2() {
   diametroPValue.textContent = module*Nteeths
 
 
+  //////bucle for
+  const espacioDeDienteMasHueco = 360/Nteeths
+  const espacioDeDiente = espacioDeDienteMasHueco/2
+  // console.log('huecos', huecos)
+  var angulodeInicioDiente = 0
+  
+  // ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < Nteeths; i++) {
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.strokeStyle = 'blue';
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, module*Nteeths, angulodeInicioDiente*Math.PI/180, angulodeInicioDiente*Math.PI/180 + espacioDeDiente*Math.PI/180);
+    angulodeInicioDiente = angulodeInicioDiente + espacioDeDienteMasHueco
+    console.log('angulodeInicioDiente', angulodeInicioDiente)
+    console.log('canvas.width', canvas.width)
+    console.log('canvas.height', canvas.height)
+    // ctx.translate(canvas.width / 2, canvas.height / 2);
+  }
 /////////////////////////////////n
 //   ctx.strokeStyle = 'red';
 // ctx.moveTo(100, 75);
 // ctx.lineTo(0, 0);
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-ctx.lineWidth = 1;
-ctx.stroke();
-ctx.strokeStyle = 'blue';
-ctx.beginPath();
-ctx.arc(100, 75, module*Nteeths, 0, 5);
-ctx.stroke();
+// ctx.lineWidth = 1;
+// ctx.stroke();
+// ctx.strokeStyle = 'blue';
+// ctx.beginPath();
+// ctx.arc(100, 75, module*Nteeths, 0*Math.PI/180, 90*Math.PI/180);
+// ctx.stroke();
 }
 
 drawGear();
