@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebNote</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        #canvas {
+            border: 1px solid #000;
+            position: absolute;
+            top: 90px;
+            left: 0;
+        }
+        .text-box {
+            position: absolute;
+            min-width: 100px;
+            min-height: 50px;
+            border: 1px solid #000;
+            padding: 5px;
+            background-color: white;
+            overflow: auto;
+        }
+        .text-box-content {
+            width: 100%;
+            height: 100%;
+            border: none;
+            resize: none;
+            outline: none;
+        }
+        .resize-handle {
+            width: 10px;
+            height: 10px;
+            background-color: #000;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            cursor: se-resize;
+        }
+        #toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            z-index: 1000;
+        }
+        #tabs {
+            position: fixed;
+            top: 40px;
+            left: 0;
+            width: 100%;
+            padding: 5px;
+            background-color: #e0e0e0;
+            z-index: 999;
+        }
+        .tab {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-right: 5px;
+            background-color: #d0d0d0;
+            cursor: pointer;
+        }
+        .tab.active {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button id="addTextBox">Add Text Box</button>
+        <button id="toggleDraw">Toggle Draw Mode</button>
+        <button id="save">Save</button>
+        <button id="load">Load</button>
+        <input type="color" id="colorPicker" value="#000000">
+        <button id="addTab">Add Tab</button>
+    </div>
+    <div id="tabs"></div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        class WebNote {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.tabs = [];
+                this.currentTab = null;
+                this.isDrawing = false;
+                this.drawMode = false;
+
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight - 90;
+
+                this.setupEventListeners();
+                this.addTab('Tab 1');
+            }
+
+            setupEventListeners() {
+                document.getElementById('addTextBox').addEventListener('click', () => this.addTextBox());
+                document.getElementById('toggleDraw').addEventListener('click', () => this.toggleDrawMode());
+                document.getElementById('save').addEventListener('click', () => this.save());
+                document.getElementById('load').addEventListener('click', () => this.load());
+                document.getElementById('addTab').addEventListener('click', () => this.addTab());
+                
+                this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
+                this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+                this.canvas.addEventListener('mouseup', () => this.stopDrawing());
+                this.canvas.addEventListener('mouseout', () => this.stopDrawing());
+            }
+
+            addTab(name = null) {
+                const tabName = name || prompt('Enter tab name:');
+                if (tabName) {
+                    const tab = {
+                        name: tabName,
+                        textBoxes: [],
+                        canvasData: null
+                    };
+                    this.tabs.push(tab);
+                    this.renderTabs();
+                    this.switchTab(this.tabs.length - 1);
+                }
+            }
+
+            renderTabs() {
+                const tabsContainer = document.getElementById('tabs');
+                tabsContainer.innerHTML = '';
+                this.tabs.forEach((tab, index) => {
+                    const tabElement = document.createElement('div');
+                    tabElement.className = 'tab';
+                    tabElement.textContent = tab.name;
+                    tabElement.addEventListener('click', () => this.switchTab(index));
+                    tabsContainer.appendChild(tabElement);
+                });
+            }
+
+            switchTab(index) {
+                if (this.currentTab !== null) {
+                    this.tabs[this.currentTab].canvasData = this.canvas.toDataURL();
+                    this.tabs[this.currentTab].textBoxes.forEach(box => box.style.display = 'none');
+                }
+
+                this.currentTab = index;
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                if (this.tabs[this.currentTab].canvasData) {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.ctx.drawImage(img, 0, 0);
+                    };
+                    img.src = this.tabs[this.currentTab].canvasData;
+                }
+
+                this.tabs[this.currentTab].textBoxes.forEach(box => box.style.display = 'block');
+
+                document.querySelectorAll('.tab').forEach((tab, idx) => {
+                    tab.classList.toggle('active', idx === index);
+                });
+            }
+
+            addTextBox() {
+                const textBox = document.createElement('div');
+                textBox.className = 'text-box';
+                textBox.style.left = '100px';
+                textBox.style.top = '100px';
+                textBox.style.width = '200px';
+                textBox.style.height = '100px';
+
+                const textArea = document.createElement('textarea');
+                textArea.className = 'text-box-content';
+                textBox.appendChild(textArea);
+
+                const resizeHandle = document.createElement('div');
+                resizeHandle.className = 'resize-handle';
+                textBox.appendChild(resizeHandle);
+
+                document.body.appendChild(textBox);
+
+                this.makeElementDraggable(textBox);
+                this.makeElementResizable(textBox, resizeHandle);
+                this.tabs[this.currentTab].textBoxes.push(textBox);
+            }
+
+            makeElementDraggable(element) {
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                element.onmousedown = (e) => {
+                    if (e.target.classList.contains('text-box-content') || e.target.classList.contains('resize-handle')) return;
+                    e.preventDefault();
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    document.onmouseup = () => {
+                        document.onmouseup = null;
+                        document.onmousemove = null;
+                    };
+                    document.onmousemove = (e) => {
+                        e.preventDefault();
+                        pos1 = pos3 - e.clientX;
+                        pos2 = pos4 - e.clientY;
+                        pos3 = e.clientX;
+                        pos4 = e.clientY;
+                        element.style.top = (element.offsetTop - pos2) + "px";
+                        element.style.left = (element.offsetLeft - pos1) + "px";
+                    };
+                };
+            }
+
+            makeElementResizable(element, handle) {
+                handle.onmousedown = (e) => {
+                    e.preventDefault();
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startWidth = parseInt(document.defaultView.getComputedStyle(element).width, 10);
+                    const startHeight = parseInt(document.defaultView.getComputedStyle(element).height, 10);
+                    
+                    document.onmousemove = (e) => {
+                        const newWidth = startWidth + e.clientX - startX;
+                        const newHeight = startHeight + e.clientY - startY;
+                        element.style.width = newWidth + 'px';
+                        element.style.height = newHeight + 'px';
+                    };
+                    
+                    document.onmouseup = () => {
+                        document.onmousemove = null;
+                        document.onmouseup = null;
+                    };
+                };
+            }
+
+            toggleDrawMode() {
+                this.drawMode = !this.drawMode;
+                this.canvas.style.cursor = this.drawMode ? 'crosshair' : 'default';
+            }
+
+            startDrawing(e) {
+                if (!this.drawMode) return;
+                this.isDrawing = true;
+                this.draw(e);
+            }
+
+            draw(e) {
+                if (!this.isDrawing || !this.drawMode) return;
+                this.ctx.lineWidth = 2;
+                this.ctx.lineCap = 'round';
+                this.ctx.strokeStyle = document.getElementById('colorPicker').value;
+
+                this.ctx.lineTo(e.clientX, e.clientY - 90);
+                this.ctx.stroke();
+                this.ctx.beginPath();
+                this.ctx.moveTo(e.clientX, e.clientY - 90);
+            }
+
+            stopDrawing() {
+                this.isDrawing = false;
+                this.ctx.beginPath();
+            }
+
+            save() {
+                const data = {
+                    tabs: this.tabs.map(tab => ({
+                        name: tab.name,
+                        textBoxes: tab.textBoxes.map(box => ({
+                            content: box.querySelector('.text-box-content').value,
+                            left: box.style.left,
+                            top: box.style.top,
+                            width: box.style.width,
+                            height: box.style.height
+                        })),
+                        canvasData: tab.canvasData
+                    }))
+                };
+                localStorage.setItem('webNoteData', JSON.stringify(data));
+                alert('Data saved!');
+            }
+
+            load() {
+                const data = JSON.parse(localStorage.getItem('webNoteData'));
+                if (data) {
+                    this.tabs = data.tabs.map(tabData => ({
+                        name: tabData.name,
+                        textBoxes: tabData.textBoxes.map(boxData => {
+                            const textBox = document.createElement('div');
+                            textBox.className = 'text-box';
+                            textBox.style.left = boxData.left;
+                            textBox.style.top = boxData.top;
+                            textBox.style.width = boxData.width;
+                            textBox.style.height = boxData.height;
+
+                            const textArea = document.createElement('textarea');
+                            textArea.className = 'text-box-content';
+                            textArea.value = boxData.content;
+                            textBox.appendChild(textArea);
+
+                            const resizeHandle = document.createElement('div');
+                            resizeHandle.className = 'resize-handle';
+                            textBox.appendChild(resizeHandle);
+
+                            document.body.appendChild(textBox);
+                            this.makeElementDraggable(textBox);
+                            this.makeElementResizable(textBox, resizeHandle);
+                            return textBox;
+                        }),
+                        canvasData: tabData.canvasData
+                    }));
+
+                    this.renderTabs();
+                    this.switchTab(0);
+                    alert('Data loaded!');
+                } else {
+                    alert('No saved data found!');
+                }
+            }
+        }
+
+        new WebNote();
+    </script>
+</body>
+</html>

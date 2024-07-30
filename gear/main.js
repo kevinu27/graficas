@@ -133,13 +133,25 @@ function drawGear2() {
   var angulodeInicioDiente = 0
   
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < Nteeths; i++) {
+  for (let i = 0; i < Nteeths+1; i++) {
     ctx.lineWidth = 1;
     ctx.stroke();
-    ctx.strokeStyle = 'blue';
     ctx.beginPath();
     ctx.arc(canvas.width / 2, canvas.height / 2, module*Nteeths, angulodeInicioDiente*Math.PI/180, angulodeInicioDiente*Math.PI/180 + espacioDeDiente*Math.PI/180);
+    ctx.strokeStyle = 'blue';
     angulodeInicioDiente = angulodeInicioDiente + espacioDeDienteMasHueco
+
+    ////////////////calcular el punto desde donde sale el vector
+    //x=cx+r⋅cos(startAngle)
+    //y=cy+r⋅sin(startAngle)
+    let inicioBaseDientex = (canvas.width / 2 ) + module*Nteeths*Math.cos(angulodeInicioDiente)
+    let inicioBaseDientey = (canvas.height / 2 ) + module*Nteeths*Math.sin(angulodeInicioDiente)
+    
+    ctx.moveTo(inicioBaseDientex, inicioBaseDientey);
+    ctx.lineTo(0, 0);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'red';
+
     console.log('angulodeInicioDiente', angulodeInicioDiente)
     console.log('canvas.width', canvas.width)
     console.log('canvas.height', canvas.height)
