@@ -70,10 +70,15 @@
         .tab.active {
             background-color: #ffffff;
         }
+        #filePath {
+            width: 300px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
     <div id="toolbar">
+        <input type="text" id="filePath" placeholder="Enter save path (e.g., /documents/mynote.json)">
         <button id="addTextBox">Add Text Box</button>
         <button id="toggleDraw">Toggle Draw Mode</button>
         <button id="save">Save</button>
@@ -93,6 +98,7 @@
                 this.currentTab = null;
                 this.isDrawing = false;
                 this.drawMode = false;
+                this.filePath = '';
 
                 this.canvas.width = window.innerWidth;
                 this.canvas.height = window.innerHeight - 90;
@@ -107,6 +113,7 @@
                 document.getElementById('save').addEventListener('click', () => this.save());
                 document.getElementById('load').addEventListener('click', () => this.load());
                 document.getElementById('addTab').addEventListener('click', () => this.addTab());
+                document.getElementById('filePath').addEventListener('change', (e) => this.filePath = e.target.value);
                 
                 this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
                 this.canvas.addEventListener('mousemove', (e) => this.draw(e));
@@ -274,46 +281,82 @@
                         canvasData: tab.canvasData
                     }))
                 };
-                localStorage.setItem('webNoteData', JSON.stringify(data));
-                alert('Data saved!');
+
+                const jsonString = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonString], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = this.filePath || 'webnote.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                alert('Data saved! Check your downloads folder.');
             }
 
             load() {
-                const data = JSON.parse(localStorage.getItem('webNoteData'));
-                if (data) {
-                    this.tabs = data.tabs.map(tabData => ({
-                        name: tabData.name,
-                        textBoxes: tabData.textBoxes.map(boxData => {
-                            const textBox = document.createElement('div');
-                            textBox.className = 'text-box';
-                            textBox.style.left = boxData.left;
-                            textBox.style.top = boxData.top;
-                            textBox.style.width = boxData.width;
-                            textBox.style.height = boxData.height;
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
 
-                            const textArea = document.createElement('textarea');
-                            textArea.className = 'text-box-content';
-                            textArea.value = boxData.content;
-                            textBox.appendChild(textArea);
+                input.onchange = e => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
 
-                            const resizeHandle = document.createElement('div');
-                            resizeHandle.className = 'resize-handle';
-                            textBox.appendChild(resizeHandle);
+                    reader.onload = readerEvent => {
+                        try {
+                            const content = readerEvent.target.result;
+                            const data = JSON.parse(content);
+                            this.loadData(data);
+                            alert('Data loaded successfully!');
+                        } catch (error) {
+                            alert('Error loading file: ' + error.message);
+                        }
+                    }
 
-                            document.body.appendChild(textBox);
-                            this.makeElementDraggable(textBox);
-                            this.makeElementResizable(textBox, resizeHandle);
-                            return textBox;
-                        }),
-                        canvasData: tabData.canvasData
-                    }));
-
-                    this.renderTabs();
-                    this.switchTab(0);
-                    alert('Data loaded!');
-                } else {
-                    alert('No saved data found!');
+                    reader.readAsText(file, 'UTF-8');
                 }
+
+                input.click();
+            }
+
+            loadData(data) {
+                // Clear existing tabs and text boxes
+                this.tabs.forEach(tab => tab.textBoxes.forEach(box => box.remove()));
+                this.tabs = [];
+
+                this.tabs = data.tabs.map(tabData => ({
+                    name: tabData.name,
+                    textBoxes: tabData.textBoxes.map(boxData => {
+                        const textBox = document.createElement('div');
+                        textBox.className = 'text-box';
+                        textBox.style.left = boxData.left;
+                        textBox.style.top = boxData.top;
+                        textBox.style.width = boxData.width;
+                        textBox.style.height = boxData.height;
+
+                        const textArea = document.createElement('textarea');
+                        textArea.className = 'text-box-content';
+                        textArea.value = boxData.content;
+                        textBox.appendChild(textArea);
+
+                        const resizeHandle = document.createElement('div');
+                        resizeHandle.className = 'resize-handle';
+                        textBox.appendChild(resizeHandle);
+
+                        document.body.appendChild(textBox);
+                        this.makeElementDraggable(textBox);
+                        this.makeElementResizable(textBox, resizeHandle);
+                        return textBox;
+                    }),
+                    canvasData: tabData.canvasData
+                }));
+
+                this.renderTabs();
+                this.switchTab(0);
             }
         }
 
