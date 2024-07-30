@@ -10,12 +10,27 @@
             padding: 0;
             height: 100%;
             font-family: Arial, sans-serif;
+            overflow: hidden;
         }
-        #canvas {
-            border: 1px solid #000;
+        #scrollContainer {
             position: absolute;
             top: 90px;
             left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+        }
+        #contentArea {
+            position: relative;
+            width: 100%;
+            height: 5000px; /* Initial height, will be expanded as needed */
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
         .text-box {
             position: absolute;
@@ -87,24 +102,35 @@
         <button id="addTab">Add Tab</button>
     </div>
     <div id="tabs"></div>
-    <canvas id="canvas"></canvas>
+    <div id="scrollContainer">
+        <div id="contentArea">
+            <canvas id="canvas"></canvas>
+        </div>
+    </div>
 
     <script>
         class WebNote {
             constructor() {
                 this.canvas = document.getElementById('canvas');
                 this.ctx = this.canvas.getContext('2d');
+                this.contentArea = document.getElementById('contentArea');
+                this.scrollContainer = document.getElementById('scrollContainer');
                 this.tabs = [];
                 this.currentTab = null;
                 this.isDrawing = false;
                 this.drawMode = false;
                 this.filePath = '';
 
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight - 90;
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
 
                 this.setupEventListeners();
                 this.addTab('Tab 1');
+            }
+
+            resizeCanvas() {
+                this.canvas.width = this.contentArea.offsetWidth;
+                this.canvas.height = this.contentArea.offsetHeight;
             }
 
             setupEventListeners() {
@@ -119,6 +145,17 @@
                 this.canvas.addEventListener('mousemove', (e) => this.draw(e));
                 this.canvas.addEventListener('mouseup', () => this.stopDrawing());
                 this.canvas.addEventListener('mouseout', () => this.stopDrawing());
+
+                this.scrollContainer.addEventListener('scroll', () => {
+                    if (this.scrollContainer.scrollTop + this.scrollContainer.clientHeight >= this.contentArea.offsetHeight - 500) {
+                        this.expandContentArea();
+                    }
+                });
+            }
+
+            expandContentArea() {
+                this.contentArea.style.height = (this.contentArea.offsetHeight + 1000) + 'px';
+                this.resizeCanvas();
             }
 
             addTab(name = null) {
@@ -175,7 +212,7 @@
                 const textBox = document.createElement('div');
                 textBox.className = 'text-box';
                 textBox.style.left = '100px';
-                textBox.style.top = '100px';
+                textBox.style.top = (this.scrollContainer.scrollTop + 100) + 'px';
                 textBox.style.width = '200px';
                 textBox.style.height = '100px';
 
@@ -187,7 +224,7 @@
                 resizeHandle.className = 'resize-handle';
                 textBox.appendChild(resizeHandle);
 
-                document.body.appendChild(textBox);
+                this.contentArea.appendChild(textBox);
 
                 this.makeElementDraggable(textBox);
                 this.makeElementResizable(textBox, resizeHandle);
@@ -252,14 +289,18 @@
 
             draw(e) {
                 if (!this.isDrawing || !this.drawMode) return;
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top + this.scrollContainer.scrollTop;
+
                 this.ctx.lineWidth = 2;
                 this.ctx.lineCap = 'round';
                 this.ctx.strokeStyle = document.getElementById('colorPicker').value;
 
-                this.ctx.lineTo(e.clientX, e.clientY - 90);
+                this.ctx.lineTo(x, y);
                 this.ctx.stroke();
                 this.ctx.beginPath();
-                this.ctx.moveTo(e.clientX, e.clientY - 90);
+                this.ctx.moveTo(x, y);
             }
 
             stopDrawing() {
@@ -279,7 +320,8 @@
                             height: box.style.height
                         })),
                         canvasData: tab.canvasData
-                    }))
+                    })),
+                    contentAreaHeight: this.contentArea.offsetHeight
                 };
 
                 const jsonString = JSON.stringify(data, null, 2);
@@ -328,6 +370,9 @@
                 this.tabs.forEach(tab => tab.textBoxes.forEach(box => box.remove()));
                 this.tabs = [];
 
+                this.contentArea.style.height = data.contentAreaHeight + 'px';
+                this.resizeCanvas();
+
                 this.tabs = data.tabs.map(tabData => ({
                     name: tabData.name,
                     textBoxes: tabData.textBoxes.map(boxData => {
@@ -347,7 +392,7 @@
                         resizeHandle.className = 'resize-handle';
                         textBox.appendChild(resizeHandle);
 
-                        document.body.appendChild(textBox);
+                        this.contentArea.appendChild(textBox);
                         this.makeElementDraggable(textBox);
                         this.makeElementResizable(textBox, resizeHandle);
                         return textBox;
