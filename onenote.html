@@ -120,6 +120,7 @@
                 this.isDrawing = false;
                 this.drawMode = false;
                 this.filePath = '';
+                this.lineas = []
 
                 this.resizeCanvas();
                 window.addEventListener('resize', () => this.resizeCanvas());
@@ -164,7 +165,8 @@
                     const tab = {
                         name: tabName,
                         textBoxes: [],
-                        canvasData: null
+                        canvasData: null,
+                        drawings:[]
                     };
                     this.tabs.push(tab);
                     this.renderTabs();
@@ -229,6 +231,8 @@
                 this.makeElementDraggable(textBox);
                 this.makeElementResizable(textBox, resizeHandle);
                 this.tabs[this.currentTab].textBoxes.push(textBox);
+                
+
             }
 
             makeElementDraggable(element) {
@@ -282,6 +286,7 @@
             }
 
             startDrawing(e) {
+                console.log('e', e)
                 if (!this.drawMode) return;
                 this.isDrawing = true;
                 this.draw(e);
@@ -290,6 +295,7 @@
             draw(e) {
                 if (!this.isDrawing || !this.drawMode) return;
                 const rect = this.canvas.getBoundingClientRect();
+                // console.log('rect', rect)
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top + this.scrollContainer.scrollTop;
 
@@ -301,6 +307,11 @@
                 this.ctx.stroke();
                 this.ctx.beginPath();
                 this.ctx.moveTo(x, y);
+                // console.log('this.ctx', this.ctx)
+                 this.lineas.push({x: x, y: y});
+                // console.log('this.lineas', this.lineas)
+                this.tabs[this.currentTab].drawings = this.lineas;
+                console.log('this.tabs[this.currentTab].drawings', this.tabs[this.currentTab].drawings)
             }
 
             stopDrawing() {
@@ -317,10 +328,13 @@
                             left: box.style.left,
                             top: box.style.top,
                             width: box.style.width,
-                            height: box.style.height
+                            height: box.style.height,
                         })),
-                        canvasData: tab.canvasData
-                    })),
+                        canvasData: tab.canvasData,
+                        drawings: tab.drawings
+                    }
+                
+                )),
                     contentAreaHeight: this.contentArea.offsetHeight
                 };
 
@@ -372,7 +386,7 @@
 
                 this.contentArea.style.height = data.contentAreaHeight + 'px';
                 this.resizeCanvas();
-
+                console.log('-----', data.tabs[0].drawings)
                 this.tabs = data.tabs.map(tabData => ({
                     name: tabData.name,
                     textBoxes: tabData.textBoxes.map(boxData => {
@@ -397,9 +411,11 @@
                         this.makeElementResizable(textBox, resizeHandle);
                         return textBox;
                     }),
-                    canvasData: tabData.canvasData
+                    canvasData: tabData.canvasData,
+                    drawings: tabData.drawings
                 }));
-
+                
+                console.log('this.tabs.drawings', this.tabs[0].drawings)
                 this.renderTabs();
                 this.switchTab(0);
             }
