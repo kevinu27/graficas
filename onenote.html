@@ -121,6 +121,7 @@
                 this.drawMode = false;
                 this.filePath = '';
                 this.lineas = []
+                this.loading = false
 
                 this.resizeCanvas();
                 window.addEventListener('resize', () => this.resizeCanvas());
@@ -295,7 +296,7 @@
             draw(e) {
                 if (!this.isDrawing || !this.drawMode) return;
                 const rect = this.canvas.getBoundingClientRect();
-                // console.log('rect', rect)
+                console.log('e---', e)
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top + this.scrollContainer.scrollTop;
 
@@ -308,10 +309,17 @@
                 this.ctx.beginPath();
                 this.ctx.moveTo(x, y);
                 // console.log('this.ctx', this.ctx)
-                 this.lineas.push({x: x, y: y});
-                // console.log('this.lineas', this.lineas)
-                this.tabs[this.currentTab].drawings = this.lineas;
-                console.log('this.tabs[this.currentTab].drawings', this.tabs[this.currentTab].drawings)
+                console.log('antes de en el  if(!this.loading) de draw(e)')
+
+                if(!this.loading){
+                    console.log('en el  if(!this.loading) de draw(e)')
+                    this.lineas.push({clientX: x, clientY: y, state: "solo dibujando, sin cargar"});
+                   // console.log('this.lineas', this.lineas)
+                   this.tabs[this.currentTab].drawings = this.lineas;
+                   console.log('this.tabs[this.currentTab].drawings', this.tabs[this.currentTab].drawings)
+
+                }
+                this.loading = false
             }
 
             stopDrawing() {
@@ -414,7 +422,20 @@
                     canvasData: tabData.canvasData,
                     drawings: tabData.drawings
                 }));
-                
+                console.log('antes del bucle for')
+                console.log('data.tabs[0].drawings.length -1', data.tabs[0].drawings.length -1)
+
+                for(let i=0; i< data.tabs[0].drawings.length -1; i++ ){
+                    console.log('en el bucle for')
+                    this.loading= true;
+                    this.isDrawing = true;
+                    this.drawMode = true;
+                    this.draw(data.tabs[0].drawings[i])
+
+                }
+                this.isDrawing = false;
+                this.drawMode = false;
+                console.log('data--------', data.tabs[0].drawings)
                 console.log('this.tabs.drawings', this.tabs[0].drawings)
                 this.renderTabs();
                 this.switchTab(0);
